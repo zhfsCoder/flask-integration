@@ -1,8 +1,9 @@
-from flask import render_template, url_for, session, redirect
+from flask import render_template, url_for, session, redirect, current_app
 from . import main
 from .form import NameForm, PhotoForm
 from ..models import User, Role
 from .. import db
+from ..email import send_mail
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -13,6 +14,9 @@ def index():
             user = User(username = form.name.data)
             db.session.add(user)
             session['known'] = False
+            if current_app.config['FLASK_ADMIN']:
+                send_mail(current_app.config['FLASK_ADMIN'], 'New User',
+                          'mail/new_user', user=user)
         else:
             session['known'] = True
         session['name'] = form.name.data
